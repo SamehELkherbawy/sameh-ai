@@ -1,20 +1,61 @@
 <!DOCTYPE html>
-<html>
+<html dir="rtl">
 <head>
     <title>سامح - مساعدك الذكي</title>
     <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        #chat-box { height: 400px; border: 1px solid #ccc; padding: 10px; overflow-y: scroll; margin: 10px 0; }
+        #user-input { width: 70%; padding: 10px; }
+        button { padding: 10px; background: #007bff; color: white; border: none; cursor: pointer; }
+        .message { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .user { background: #e3f2fd; text-align: left; }
+        .samih { background: #f1f8e9; text-align: right; }
+    </style>
 </head>
 <body>
-    <h1>مرحباً! أنا سامح</h1>
+    <h1>مرحباً! أنا سامح - مساعدك الذكي</h1>
     <div id="chat-box"></div>
-    <input type="text" id="user-input" placeholder="اسألني أي حاجة...">
-    <button onclick="sendMessage()">إرسال</button>
+    <div>
+        <input type="text" id="user-input" placeholder="اكتب سؤالك هنا..." onkeypress="handleKeyPress(event)">
+        <button onclick="sendMessage()">إرسال</button>
+    </div>
 
     <script>
         function sendMessage() {
             const input = document.getElementById('user-input');
-            const message = input.value;
-            // هنا هنعمل الاتصال بالـ AI
+            const message = input.value.trim();
+            if (!message) return;
+
+            // عرض رسالة المستخدم
+            addMessage(message, 'user');
+            input.value = '';
+
+            // إرسال للـ AI
+            fetch('/chat', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({message: message})
+            })
+            .then(response => response.json())
+            .then(data => {
+                addMessage(data.response, 'samih');
+            });
+        }
+
+        function addMessage(text, sender) {
+            const chatBox = document.getElementById('chat-box');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            messageDiv.textContent = text;
+            chatBox.appendChild(messageDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
         }
     </script>
 </body>
